@@ -22,9 +22,14 @@
  */
 
 /* Header files*/
-#include <Arduino.h>
 #include <SPI.h>
 #include <Wire.h>
+#include <Arduino.h>
+
+#include <WiFi.h>
+#include <WebServer.h>
+#include <HTTPClient.h>
+
 #include <DHT.h>
 #include <MQ135.h>
 #include "Adafruit_SHT31.h"
@@ -47,6 +52,9 @@ MQ135 mq135_sensor(PIN_MQ135);
 
 bool enableHeater = false;
 uint8_t loopCnt = 0;
+
+const char* ssid = "wifi-name";  // Enter your Wi-Fi SSID here
+const char* password = "hehe";  // Enter Wi-Fi Password here
 
 /* 
  * BMP280 internal helper functions
@@ -200,10 +208,27 @@ void mq_135_get_env_data(float &ppm)
 /* setup()      : Initializes, load and runs preliminary tests before going into loop() */
 void setup()
 {
-    Serial.begin(9600);
+    Serial.begin(115200);
     while(!Serial)
         delay(100);
-    
+
+    Serial.println("Connecting to "); 
+    Serial.println(ssid);
+ 
+    // Connect to Wi-Fi network
+    WiFi.begin(ssid, password);
+ 
+    // Check if Wi-Fi is connected
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(1000);
+        Serial.print(".");
+    }
+
+    Serial.println("");
+    Serial.println("WiFi connected..!");
+    Serial.print("Got IP: ");  
+    Serial.println(WiFi.localIP());   // Print the local IP address
+
     bmp_280_status_check();
     sht_31_status_check();
     dht.begin();
