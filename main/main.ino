@@ -56,6 +56,8 @@ uint8_t loopCnt = 0;
 const char* ssid = "wifi-name";  // Enter your Wi-Fi SSID here
 const char* password = "hehe";  // Enter Wi-Fi Password here
 
+String serverName = "https://api.thingspeak.com/update?api_key= api_key";
+
 /* 
  * BMP280 internal helper functions
  */
@@ -205,6 +207,39 @@ void mq_135_get_env_data(float &ppm)
     delay(300);
 
 }
+
+/*
+ * ThingsSpeak APIs
+ */
+void sendDataToThingSpeak(float bmp_temp, float bmp_pressure, float bmp_altitude, 
+                          float sht_temp, float sht_humidity, 
+                          float dht_temp, float dht_humidity, float dht_heatIndex)
+{
+    if (WiFi.status() == WL_CONNECTED) {  // Check if WiFi is connected
+        HTTPClient http;
+
+        String url = serverName + "&field1=" + bmp_temp + "&field2=" + bmp_pressure +
+                 "&field3=" + bmp_altitude + "&field4=" + sht_temp + 
+                 "&field5=" + sht_humidity + "&field6=" + dht_temp + 
+                 "&field7=" + dht_humidity + "&field8=" + dht_heatIndex;
+    
+        http.begin(url.c_str());  
+        int httpResponseCode = http.GET();  
+
+        if (httpResponseCode > 0) {  
+            Serial.print("HTTP Response code: ");
+            Serial.println(httpResponseCode);
+        } else {
+            Serial.print("Error code: ");
+            Serial.println(httpResponseCode);
+        }
+
+        http.end();
+    } else {
+            Serial.println("WiFi Disconnected");
+    }
+}
+
 /* setup()      : Initializes, load and runs preliminary tests before going into loop() */
 void setup()
 {
